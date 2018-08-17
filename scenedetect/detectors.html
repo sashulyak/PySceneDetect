@@ -1,0 +1,296 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Detection Algorithms &#8212; PySceneDetect v0.5 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Video Splitting" href="video_splitter.html" />
+    <link rel="prev" title="SceneDetector" href="scene_detector.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-scenedetect.detectors">
+<span id="detection-algorithms"></span><h1>Detection Algorithms<a class="headerlink" href="#module-scenedetect.detectors" title="Permalink to this headline">¶</a></h1>
+<p>PySceneDetect <cite>scenedetect.detectors</cite> Module</p>
+<p>This module contains implementations of scene detection algorithms by inhereting
+from the base SceneDetector class (in scenedetect.scene_detector) and implementing
+the required methods. This allows implementation of other generic algorithms as
+well as custom scenario-specific algorithms.</p>
+<p>Individual detectors are imported in this file for easy access from other
+modules (i.e. from scenedetect.detectors import ContentDetector).</p>
+<div class="section" id="module-scenedetect.detectors.content_detector">
+<span id="contentdetector"></span><h2>ContentDetector<a class="headerlink" href="#module-scenedetect.detectors.content_detector" title="Permalink to this headline">¶</a></h2>
+<p>PySceneDetect <cite>scenedetect.detectors.content_detector</cite> Module</p>
+<p>This module implements the ContentDetector, which compares the difference
+in content between adjacent frames against a set threshold/score, which if
+exceeded, triggers a scene cut.</p>
+<dl class="class">
+<dt id="scenedetect.detectors.content_detector.ContentDetector">
+<em class="property">class </em><code class="descclassname">scenedetect.detectors.content_detector.</code><code class="descname">ContentDetector</code><span class="sig-paren">(</span><em>threshold=30.0</em>, <em>min_scene_len=15</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.detectors.content_detector.ContentDetector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detects fast cuts using changes in colour and intensity between frames.</p>
+<p>Since the difference between frames is used, unlike the ThresholdDetector,
+only fast cuts are detected with this method.  To detect slow fades between
+content scenes still using HSV information, use the DissolveDetector.</p>
+<dl class="method">
+<dt id="scenedetect.detectors.content_detector.ContentDetector.process_frame">
+<code class="descname">process_frame</code><span class="sig-paren">(</span><em>frame_num</em>, <em>frame_img</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.detectors.content_detector.ContentDetector.process_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Similar to ThresholdDetector, but using the HSV colour space DIFFERENCE instead
+of single-frame RGB/grayscale intensity (thus cannot detect slow fades with this method).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frame_num</strong> (<em>int</em>) – Frame number of frame that is being passed.</li>
+<li><strong>frame_img</strong> (<em>Optional</em><em>[</em><em>int</em><em>]</em>) – Decoded frame image (numpy.ndarray) to perform scene
+detection on. Can be None <em>only</em> if the self.is_processing_required() method
+(inhereted from the base SceneDetector class) returns True.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of frames where scene cuts have been detected. There may be 0
+or more frames in the list, and not necessarily the same as frame_num.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">List[int]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-scenedetect.detectors.threshold_detector">
+<span id="thresholddetector"></span><h2>ThresholdDetector<a class="headerlink" href="#module-scenedetect.detectors.threshold_detector" title="Permalink to this headline">¶</a></h2>
+<p>PySceneDetect <cite>scenedetect.detectors.threshold_detector</cite> Module</p>
+<p>This module implements the ThresholdDetector, which uses a set intensity level
+to detect scene cuts when the average frame intensity passes the set threshold.</p>
+<dl class="class">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector">
+<em class="property">class </em><code class="descclassname">scenedetect.detectors.threshold_detector.</code><code class="descname">ThresholdDetector</code><span class="sig-paren">(</span><em>threshold=12</em>, <em>min_percent=0.95</em>, <em>min_scene_len=15</em>, <em>fade_bias=0.0</em>, <em>add_final_scene=False</em>, <em>block_size=8</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Detects fast cuts/slow fades in from and out to a given threshold level.</p>
+<p>Detects both fast cuts and slow fades so long as an appropriate threshold
+is chosen (especially taking into account the minimum grey/black level).</p>
+<dl class="attribute">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector.threshold">
+<code class="descname">threshold</code><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector.threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>8-bit intensity value that each pixel value (R, G, and B)
+must be &lt;= to in order to trigger a fade in/out.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector.min_percent">
+<code class="descname">min_percent</code><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector.min_percent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Float between 0.0 and 1.0 which represents the minimum
+percent of pixels in a frame that must meet the threshold value in
+order to trigger a fade in/out.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector.min_scene_len">
+<code class="descname">min_scene_len</code><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector.min_scene_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unsigned integer greater than 0 representing the
+minimum length, in frames, of a scene (or subsequent scene cut).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector.fade_bias">
+<code class="descname">fade_bias</code><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector.fade_bias" title="Permalink to this definition">¶</a></dt>
+<dd><p>Float between -1.0 and +1.0 representing the percentage of
+timecode skew for the start of a scene (-1.0 causing a cut at the
+fade-to-black, 0.0 in the middle, and +1.0 causing the cut to be
+right at the position where the threshold is passed).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector.add_final_scene">
+<code class="descname">add_final_scene</code><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector.add_final_scene" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean indicating if the video ends on a fade-out to
+generate an additional scene at this timecode.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector.block_size">
+<code class="descname">block_size</code><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector.block_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Number of rows in the image to sum per iteration (can be
+tuned to increase performance in some cases; should be computed
+programmatically in the future).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector.frame_under_threshold">
+<code class="descname">frame_under_threshold</code><span class="sig-paren">(</span><em>frame</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector.frame_under_threshold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the frame is below (true) or above (false) the threshold.</p>
+<p>Instead of using the average, we check all pixel values (R, G, and B)
+meet the given threshold (within the minimum percent).  This ensures
+that the threshold is not exceeded while maintaining some tolerance for
+compression and noise.</p>
+<p>This is the algorithm used for absolute mode of the threshold detector.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Boolean, True if the number of pixels whose R, G, and B values are
+all &lt;= the threshold is within min_percent pixels, or False if not.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector.post_process">
+<code class="descname">post_process</code><span class="sig-paren">(</span><em>frame_num</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector.post_process" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes a final scene cut if the last detected fade was a fade-out.</p>
+<p>Only writes the scene cut if add_final_scene is true, and the last fade
+that was detected was a fade-out.  There is no bias applied to this cut
+(since there is no corresponding fade-in) so it will be located at the
+exact frame where the fade-out crossed the detection threshold.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.detectors.threshold_detector.ThresholdDetector.process_frame">
+<code class="descname">process_frame</code><span class="sig-paren">(</span><em>frame_num</em>, <em>frame_img</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.detectors.threshold_detector.ThresholdDetector.process_frame" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frame_num</strong> (<em>int</em>) – Frame number of frame that is being passed.</li>
+<li><strong>frame_img</strong> (<em>numpy.ndarray</em><em> or </em><em>None</em>) – Decoded frame image (numpy.ndarray) to perform
+scene detection with. Can be None <em>only</em> if the self.is_processing_required()
+method (inhereted from the base SceneDetector class) returns True.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">List of frames where scene cuts have been detected. There may be 0
+or more frames in the list, and not necessarily the same as frame_num.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">List[int]</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.detectors.threshold_detector.compute_frame_average">
+<code class="descclassname">scenedetect.detectors.threshold_detector.</code><code class="descname">compute_frame_average</code><span class="sig-paren">(</span><em>frame</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.detectors.threshold_detector.compute_frame_average" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the average pixel value/intensity for all pixels in a frame.</p>
+<p>The value is computed by adding up the 8-bit R, G, and B values for
+each pixel, and dividing by the number of pixels multiplied by 3.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Floating point value representing average pixel intensity.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">PySceneDetect</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="frame_timecode.html">FrameTimecode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_manager.html">VideoManager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scene_manager.html">SceneManager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stats_manager.html">StatsManager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scene_detector.html">SceneDetector</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Detection Algorithms</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#module-scenedetect.detectors.content_detector">ContentDetector</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#module-scenedetect.detectors.threshold_detector">ThresholdDetector</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="video_splitter.html">Video Splitting</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="scene_detector.html" title="previous chapter">SceneDetector</a></li>
+      <li>Next: <a href="video_splitter.html" title="next chapter">Video Splitting</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Brandon Castellano.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/scenedetect/detectors.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

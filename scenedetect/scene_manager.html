@@ -1,0 +1,268 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>SceneManager &#8212; PySceneDetect v0.5 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="StatsManager" href="stats_manager.html" />
+    <link rel="prev" title="VideoManager" href="video_manager.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-scenedetect.scene_manager">
+<span id="scenemanager"></span><h1>SceneManager<a class="headerlink" href="#module-scenedetect.scene_manager" title="Permalink to this headline">¶</a></h1>
+<p>PySceneDetect <cite>scenedetect.scene_manager</cite> Module</p>
+<p>This module implements the SceneManager object, which is used to coordinate
+SceneDetectors and frame sources (e.g. VideoManagers, VideoCaptures), creating
+a SceneResult object for each detected scene.</p>
+<p>The SceneManager also facilitates passing a StatsManager, if any is defined,
+to the associated SceneDetectors for caching of frame metrics.</p>
+<dl class="class">
+<dt id="scenedetect.scene_manager.SceneManager">
+<em class="property">class </em><code class="descclassname">scenedetect.scene_manager.</code><code class="descname">SceneManager</code><span class="sig-paren">(</span><em>stats_manager=None</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.scene_manager.SceneManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>The SceneManager facilitates detection of scenes via the detect_scenes() method,
+given a video source (scenedetect.VideoManager or cv2.VideoCapture), and SceneDetector
+algorithms added via the add_detector() method.</p>
+<p>Can also optionally take a StatsManager instance during construction to cache intermediate
+scene detection calculations, making subsequent calls to detect_scenes() much faster,
+allowing the cached values to be saved/loaded to/from disk, and also manually determining
+the optimal threshold values or other options for various detection algorithms.</p>
+<dl class="method">
+<dt id="scenedetect.scene_manager.SceneManager.add_detector">
+<code class="descname">add_detector</code><span class="sig-paren">(</span><em>detector</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.scene_manager.SceneManager.add_detector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds/registers a SceneDetector (e.g. ContentDetector, ThresholdDetector) to
+run when detect_scenes is called. The SceneManager owns the detector object,
+so a temporary may be passed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>detector</strong> (<a class="reference internal" href="scene_detector.html#scenedetect.scene_detector.SceneDetector" title="scenedetect.scene_detector.SceneDetector"><em>SceneDetector</em></a>) – Scene detector to add to the SceneManager.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.scene_manager.SceneManager.clear">
+<code class="descname">clear</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.scene_manager.SceneManager.clear" title="Permalink to this definition">¶</a></dt>
+<dd><p>Clears all cuts/scenes and resets the SceneManager’s position.</p>
+<p>Any statistics generated are still saved in the StatsManager object
+passed to the SceneManager’s constructor, and thus, subsequent
+calls to detect_scenes, using the same frame source reset at the
+initial time (if it is a VideoManager, use the reset() method),
+will use the cached frame metrics that were computed and saved
+in the previous call to detect_scenes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.scene_manager.SceneManager.clear_detectors">
+<code class="descname">clear_detectors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.scene_manager.SceneManager.clear_detectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes all scene detectors added to the SceneManager via add_detector().</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.scene_manager.SceneManager.detect_scenes">
+<code class="descname">detect_scenes</code><span class="sig-paren">(</span><em>frame_source</em>, <em>start_time=0</em>, <em>end_time=None</em>, <em>frame_skip=0</em>, <em>show_progress=True</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.scene_manager.SceneManager.detect_scenes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Perform scene detection on the given frame_source using the added SceneDetectors.</p>
+<p>Blocks until all frames in the frame_source have been processed. Results
+can be obtained by calling the get_scene_list() method afterwards.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>frame_source</strong> (<em>scenedetect.VideoManager</em><em> or </em><em>cv2.VideoCapture</em>) – A source of
+frames to process (using frame_source.read() as in VideoCapture).
+VideoManager is preferred as it allows concatenation of multiple videos
+as well as seeking, by defining start time and end time/duration.</li>
+<li><strong>start_time</strong> (<em>int</em><em> or </em><a class="reference internal" href="frame_timecode.html#scenedetect.frame_timecode.FrameTimecode" title="scenedetect.frame_timecode.FrameTimecode"><em>FrameTimecode</em></a>) – Time/frame the passed frame_source object
+is currently at in time (i.e. the frame # read() will return next).
+Must be passed if the frame_source has been seeked past frame 0
+(i.e. calling set_duration on a VideoManager or seeking a VideoCapture).</li>
+<li><strong>end_time</strong> (<em>int</em><em> or </em><a class="reference internal" href="frame_timecode.html#scenedetect.frame_timecode.FrameTimecode" title="scenedetect.frame_timecode.FrameTimecode"><em>FrameTimecode</em></a>) – Maximum number of frames to detect
+(set to None to detect all available frames). Only needed for OpenCV
+VideoCapture objects, as VideoManager allows set_duration.</li>
+<li><strong>frame_skip</strong> (<em>int</em>) – Number of frames to skip (i.e. process every 1 in N+1
+frames, where N is frame_skip, processing only 1/N+1 percent of the
+video, speeding up the detection time at the expense of accuracy).</li>
+<li><strong>show_progress</strong> (<em>bool</em>) – If True, and the tqdm module is available, displays
+a progress bar with the progress, framerate, and expected time to
+complete processing the video frame source.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Number of frames read and processed from the frame source.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.scene_manager.SceneManager.get_cut_list">
+<code class="descname">get_cut_list</code><span class="sig-paren">(</span><em>base_timecode</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.scene_manager.SceneManager.get_cut_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of FrameTimecodes of the detected scene changes/cuts.</p>
+<p>Unlike get_scene_list, the cutting list returns a list of FrameTimecodes representing
+the point in the input video(s) where a new scene was detected, and thus the frame
+where the input should be cut/split. The cutting list, in turn, is used to generate
+the scene list, noting that each scene is contiguous starting from the first frame
+and ending at the last frame detected.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of FrameTimecode objects denoting the points in time where a scene change
+was detected in the input video(s), which can also be passed to external tools
+for automated splitting of the input into individual scenes.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.scene_manager.SceneManager.get_num_detectors">
+<code class="descname">get_num_detectors</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.scene_manager.SceneManager.get_num_detectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets number of registered scene detectors added via add_detector.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.scene_manager.SceneManager.get_scene_list">
+<code class="descname">get_scene_list</code><span class="sig-paren">(</span><em>base_timecode</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.scene_manager.SceneManager.get_scene_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a list of tuples of start/end FrameTimecodes for each scene.</p>
+<p>The scene list is generated from the cutting list (get_cut_list), noting that each
+scene is contiguous, starting from the first and ending at the last frame of the input.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of tuples in the form (start_time, end_time), where both start_time and
+end_time are FrameTimecode objects representing the exact time/frame where each
+detected scene in the video begins and ends.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.scene_manager.write_scene_list">
+<code class="descclassname">scenedetect.scene_manager.</code><code class="descname">write_scene_list</code><span class="sig-paren">(</span><em>output_csv_file</em>, <em>scene_list</em>, <em>cut_list=None</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.scene_manager.write_scene_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the given list of scenes to an output file handle in CSV format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_csv_file</strong> – Handle to open file in write mode.</li>
+<li><strong>scene_list</strong> – List of pairs of FrameTimecodes denoting each scene’s start/end FrameTimecode.</li>
+<li><strong>cut_list</strong> – Optional list of FrameTimecode objects denoting the cut list (i.e. the frames
+in the video that need to be split to generate individual scenes). If not passed,
+the start times of each scene (besides the 0th scene) is used instead.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">PySceneDetect</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="frame_timecode.html">FrameTimecode</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_manager.html">VideoManager</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SceneManager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stats_manager.html">StatsManager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scene_detector.html">SceneDetector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detectors.html">Detection Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_splitter.html">Video Splitting</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="video_manager.html" title="previous chapter">VideoManager</a></li>
+      <li>Next: <a href="stats_manager.html" title="next chapter">StatsManager</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Brandon Castellano.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/scenedetect/scene_manager.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

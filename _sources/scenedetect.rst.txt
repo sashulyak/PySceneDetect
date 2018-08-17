@@ -1,0 +1,6 @@
+
+SceneDetect Reference
+=========================================
+
+.. autoclass:: scenedetect.scene_manager.SceneManager
+

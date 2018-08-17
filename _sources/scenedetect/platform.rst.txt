@@ -1,0 +1,7 @@
+
+Platform
+-----------------------------------
+
+.. automodule:: scenedetect.platform
+   :members:
+   :undoc-members:

@@ -1,0 +1,11 @@
+
+FrameTimecode Reference
+=========================================
+
+.. automodule:: scenedetect.frame_timecode
+   :members:
+   :undoc-members:
+
+
+.. autoclass:: scenedetect.frame_timecode.FrameTimecode
+   :members:

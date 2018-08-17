@@ -1,0 +1,644 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>VideoManager &#8212; PySceneDetect v0.5 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="SceneManager" href="scene_manager.html" />
+    <link rel="prev" title="FrameTimecode" href="frame_timecode.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <div class="section" id="module-scenedetect.video_manager">
+<span id="videomanager"></span><h1>VideoManager<a class="headerlink" href="#module-scenedetect.video_manager" title="Permalink to this headline">¶</a></h1>
+<p>PySceneDetect <cite>scenedetect.video_manager</cite> Module</p>
+<p>This module contains the VideoManager class, which provides a consistent
+interface to reading videos. This module also contains specific exceptions
+raised upon certain error conditions.</p>
+<p>The VideoManager can be constructed with a path to a video (or sequence of
+videos) and a start and end time/duration, then passed to a SceneManager
+object for performing scene detection analysis. If the start time is
+modified, this needs to be reflected in the SceneManager as well.</p>
+<p>The VideoManager class attempts to emulate some methods of the OpenCV
+cv2.VideoCapture object, and can be used interchangably with one with
+respect to a SceneManager object.</p>
+<dl class="exception">
+<dt id="scenedetect.video_manager.InvalidDownscaleFactor">
+<em class="property">exception </em><code class="descclassname">scenedetect.video_manager.</code><code class="descname">InvalidDownscaleFactor</code><a class="headerlink" href="#scenedetect.video_manager.InvalidDownscaleFactor" title="Permalink to this definition">¶</a></dt>
+<dd><p>InvalidDownscaleFactor: Raised when trying to set invalid downscale factor,
+i.e. the supplied downscale factor was not a positive integer greater than zero.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="scenedetect.video_manager.VideoDecoderNotStarted">
+<em class="property">exception </em><code class="descclassname">scenedetect.video_manager.</code><code class="descname">VideoDecoderNotStarted</code><a class="headerlink" href="#scenedetect.video_manager.VideoDecoderNotStarted" title="Permalink to this definition">¶</a></dt>
+<dd><p>VideoDecodingInProgress: Raised when attempting to call certain VideoManager methods that
+must be called <em>after</em> start() has been called.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="scenedetect.video_manager.VideoDecodingInProgress">
+<em class="property">exception </em><code class="descclassname">scenedetect.video_manager.</code><code class="descname">VideoDecodingInProgress</code><a class="headerlink" href="#scenedetect.video_manager.VideoDecodingInProgress" title="Permalink to this definition">¶</a></dt>
+<dd><p>VideoDecodingInProgress: Raised when attempting to call certain VideoManager methods that
+must be called <em>before</em> start() has been called.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="scenedetect.video_manager.VideoFramerateUnavailable">
+<em class="property">exception </em><code class="descclassname">scenedetect.video_manager.</code><code class="descname">VideoFramerateUnavailable</code><span class="sig-paren">(</span><em>file_name=None</em>, <em>file_path=None</em>, <em>message='OpenCV VideoCapture object failed to return framerate when calling get(cv2.CAP_PROP_FPS).'</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoFramerateUnavailable" title="Permalink to this definition">¶</a></dt>
+<dd><p>VideoFramerateUnavailable: Raised when the framerate cannot be determined from the video,
+and the framerate has not been overriden/forced in the VideoManager.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="scenedetect.video_manager.VideoManager">
+<em class="property">class </em><code class="descclassname">scenedetect.video_manager.</code><code class="descname">VideoManager</code><span class="sig-paren">(</span><em>video_files</em>, <em>framerate=None</em>, <em>logger=None</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provides a cv2.VideoCapture-like interface to a set of one or more video files,
+or a single device ID. Supports seeking and setting end time/duration.</p>
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.get">
+<code class="descname">get</code><span class="sig-paren">(</span><em>capture_prop</em>, <em>index=None</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.get" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get (cv2.VideoCapture method) - obtains capture properties from the current
+VideoCapture object in use.  Index represents the same index as the original
+video_files list passed to the constructor.  Getting/setting the position (POS)
+properties has no effect; seeking is implemented using VideoDecoder methods.</p>
+<p>Note that getting the property CAP_PROP_FRAME_COUNT will return the integer sum of
+the frame count for all VideoCapture objects if index is not specified (or is None),
+otherwise the frame count for the given VideoCapture index is returned instead.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>capture_prop</strong> – OpenCV VideoCapture property to get (i.e. CAP_PROP_FPS).</li>
+<li><strong>index</strong> (<em>int</em><em>, </em><em>optional</em>) – Index in file_list of capture to get property from (default
+is zero). Index is not checked and will raise exception if out of bounds.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Return value from calling get(property) on the VideoCapture object.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">float</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.get_base_timecode">
+<code class="descname">get_base_timecode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.get_base_timecode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Base Timecode - returns a FrameTimecode object at frame 0 / time 00:00:00.</p>
+<p>The timecode returned by this method can be used to perform arithmetic (e.g.
+addition), passing the resulting values back to the VideoManager (e.g. for the
+set_duration() method), as the framerate of the returned FrameTimecode object
+matches that of the VideoManager.</p>
+<p>As such, this method is equivalent to creating a FrameTimecode at frame 0 with
+the VideoManager framerate, for example, given a VideoManager called obj,
+the following expression will evaluate as True:</p>
+<blockquote>
+<div>obj.get_base_timecode() == FrameTimecode(0, obj.get_framerate())</div></blockquote>
+<p>Furthermore, the base timecode object returned by a particular VideoManager
+should not be passed to another one, unless you first verify that their
+framerates are the same.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">00:00 with the video(s) framerate.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">FrameTimecode object set to frame 0/time 00</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.get_current_timecode">
+<code class="descname">get_current_timecode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.get_current_timecode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Current Timecode - returns a FrameTimecode object at current VideoManager position.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Timecode at the current VideoManager position.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference internal" href="frame_timecode.html#scenedetect.frame_timecode.FrameTimecode" title="scenedetect.frame_timecode.FrameTimecode">FrameTimecode</a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.get_framerate">
+<code class="descname">get_framerate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.get_framerate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Framerate - returns the framerate the VideoManager is assuming for all
+open VideoCaptures.  Obtained from either the capture itself, or the passed
+framerate parameter when the VideoManager object was constructed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Framerate, in frames/sec.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">float</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.get_framesize">
+<code class="descname">get_framesize</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.get_framesize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Frame Size - returns the frame size of the video(s) open in the
+VideoManager’s capture objects.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Video frame size in the form (width, height) where width</dt>
+<dd>and height represent the size of the video frame in pixels.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Tuple[int, int]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.get_framesize_effective">
+<code class="descname">get_framesize_effective</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.get_framesize_effective" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Frame Size - returns the frame size of the video(s) open in the
+VideoManager’s capture objects, divided by the current downscale factor.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Video frame size in the form (width, height) where width</dt>
+<dd>and height represent the size of the video frame in pixels.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Tuple[int, int]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.get_num_videos">
+<code class="descname">get_num_videos</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.get_num_videos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Number of Videos - returns the length of the capture list (self._cap_list),
+representing the number of videos the VideoManager has opened.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Number of videos, equal to length of capture list.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.get_video_paths">
+<code class="descname">get_video_paths</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.get_video_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Video Paths - returns list of strings containing paths to the open video(s).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">List of paths to the video files opened by the VideoManager.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">List[str]</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.grab">
+<code class="descname">grab</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.grab" title="Permalink to this definition">¶</a></dt>
+<dd><p>Grab (cv2.VideoCapture method) - retrieves a frame but does not return it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True if a frame was grabbed, False otherwise.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#scenedetect.video_manager.VideoDecoderNotStarted" title="scenedetect.video_manager.VideoDecoderNotStarted"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoDecoderNotStarted</span></code></a> – Must call start() before this method.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.read">
+<code class="descname">read</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read (cv2.VideoCapture method) - retrieves and returns a frame.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Returns tuple of</dt>
+<dd>(True, frame_image) if a frame was grabbed, where frame_image
+is a numpy ndarray of the decoded frame, otherwise (False, None).</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Tuple[bool, Union[None, numpy.ndarray]]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#scenedetect.video_manager.VideoDecoderNotStarted" title="scenedetect.video_manager.VideoDecoderNotStarted"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoDecoderNotStarted</span></code></a> – Must call start() before this method.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.release">
+<code class="descname">release</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.release" title="Permalink to this definition">¶</a></dt>
+<dd><p>Release (cv2.VideoCapture method), releases all open capture(s).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset - Reopens captures passed to the constructor of the VideoManager.</p>
+<p>Can only be called after the release method has been called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#scenedetect.video_manager.VideoDecodingInProgress" title="scenedetect.video_manager.VideoDecodingInProgress"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoDecodingInProgress</span></code></a> – Must call stop() before this method.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.retrieve">
+<code class="descname">retrieve</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.retrieve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve (cv2.VideoCapture method) - retrieves and returns a frame.</p>
+<p>Frame returned corresponds to last call to get().</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Returns tuple of</dt>
+<dd>(True, frame_image) if a frame was grabbed during the last call
+to grab(), and where frame_image is a numpy ndarray of the
+decoded frame, otherwise returns (False, None).</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Tuple[bool, Union[None, numpy.ndarray]]</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#scenedetect.video_manager.VideoDecoderNotStarted" title="scenedetect.video_manager.VideoDecoderNotStarted"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoDecoderNotStarted</span></code></a> – Must call start() before this method.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.seek">
+<code class="descname">seek</code><span class="sig-paren">(</span><em>timecode</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.seek" title="Permalink to this definition">¶</a></dt>
+<dd><p>Seek - seeks forwards to the passed timecode.</p>
+<p>Only supports seeking forwards (i.e. timecode must be greater than the
+current VideoManager position).  Can only be used after the start()
+method has been called.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>timecode</strong> (<a class="reference internal" href="frame_timecode.html#scenedetect.frame_timecode.FrameTimecode" title="scenedetect.frame_timecode.FrameTimecode"><em>FrameTimecode</em></a>) – Time in video to seek forwards to.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if seeking succeeded, False if no more frames / end of video.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">bool</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#scenedetect.video_manager.VideoDecoderNotStarted" title="scenedetect.video_manager.VideoDecoderNotStarted"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoDecoderNotStarted</span></code></a> – Must call start() before this method.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.set_downscale_factor">
+<code class="descname">set_downscale_factor</code><span class="sig-paren">(</span><em>downscale_factor=None</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.set_downscale_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set Downscale Factor - sets the downscale/subsample factor of returned frames.</p>
+<p>If N is the downscale_factor, the size of the frames returned becomes
+frame_width/N x frame_height/N via subsampling.</p>
+<p>If downscale_factor is None, the downscale factor is computed automatically
+based on the current video’s resolution.  A downscale_factor of 1 indicates
+no downscaling.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.set_duration">
+<code class="descname">set_duration</code><span class="sig-paren">(</span><em>duration=None</em>, <em>start_time=None</em>, <em>end_time=None</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.set_duration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set Duration - sets the duration/length of the video(s) to decode, as well as
+the start/end times.  Must be called before start() is called, otherwise a
+VideoDecodingInProgress exception will be thrown.  May be called after reset()
+as well.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>duration</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="frame_timecode.html#scenedetect.frame_timecode.FrameTimecode" title="scenedetect.frame_timecode.FrameTimecode"><em>FrameTimecode</em></a><em>]</em>) – The (maximum) duration in time to
+decode from the opened video(s). Mutually exclusive with end_time
+(i.e. if duration is set, end_time must be None).</li>
+<li><strong>start_time</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="frame_timecode.html#scenedetect.frame_timecode.FrameTimecode" title="scenedetect.frame_timecode.FrameTimecode"><em>FrameTimecode</em></a><em>]</em>) – The time/first frame at which to
+start decoding frames from. If set, the input video(s) will be
+seeked to when start() is called, at which point the frame at
+start_time can be obtained by calling retrieve().</li>
+<li><strong>end_time</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="frame_timecode.html#scenedetect.frame_timecode.FrameTimecode" title="scenedetect.frame_timecode.FrameTimecode"><em>FrameTimecode</em></a><em>]</em>) – The time at which to stop decoding
+frames from the opened video(s). Mutually exclusive with duration
+(i.e. if end_time is set, duration must be None).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body"><p class="first last"><a class="reference internal" href="#scenedetect.video_manager.VideoDecodingInProgress" title="scenedetect.video_manager.VideoDecodingInProgress"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoDecodingInProgress</span></code></a> – Must call before start().</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="scenedetect.video_manager.VideoManager.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoManager.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Start - starts video decoding and seeks to start time.  Raises
+exception VideoDecodingInProgress if the method is called after the
+decoder process has already been started.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#scenedetect.video_manager.VideoDecodingInProgress" title="scenedetect.video_manager.VideoDecodingInProgress"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoDecodingInProgress</span></code></a> – Must call stop() before this method if
+start() has already been called after initial construction.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="scenedetect.video_manager.VideoOpenFailure">
+<em class="property">exception </em><code class="descclassname">scenedetect.video_manager.</code><code class="descname">VideoOpenFailure</code><span class="sig-paren">(</span><em>file_list=None</em>, <em>message='OpenCV VideoCapture object failed to return True when calling isOpened().'</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoOpenFailure" title="Permalink to this definition">¶</a></dt>
+<dd><p>VideoOpenFailure: Raised when an OpenCV VideoCapture object fails to open (i.e. calling
+the isOpened() method returns a non True value).</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="scenedetect.video_manager.VideoParameterMismatch">
+<em class="property">exception </em><code class="descclassname">scenedetect.video_manager.</code><code class="descname">VideoParameterMismatch</code><span class="sig-paren">(</span><em>file_list=None</em>, <em>message='OpenCV VideoCapture object parameters do not match.'</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.VideoParameterMismatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>VideoParameterMismatch: Raised when opening multiple videos with a VideoManager, and some
+of the video parameters (frame height, frame width, and framerate/FPS) do not match.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.video_manager.close_captures">
+<code class="descclassname">scenedetect.video_manager.</code><code class="descname">close_captures</code><span class="sig-paren">(</span><em>cap_list</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.close_captures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close Captures:  Calls the close() method on every capture in cap_list.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.video_manager.compute_downscale_factor">
+<code class="descclassname">scenedetect.video_manager.</code><code class="descname">compute_downscale_factor</code><span class="sig-paren">(</span><em>frame_width</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.compute_downscale_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute Downscale Factor: Returns the optimal default downscale factor based on
+a video’s resolution (specifically, the width parameter).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">The defalt downscale factor to use with a video of frame_height x frame_width.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">int</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.video_manager.get_num_frames">
+<code class="descclassname">scenedetect.video_manager.</code><code class="descname">get_num_frames</code><span class="sig-paren">(</span><em>cap_list</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.get_num_frames" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Number of Frames: Returns total number of frames in the cap_list.</p>
+<p>Calls get(CAP_PROP_FRAME_COUNT) and returns the sum for all VideoCaptures.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.video_manager.get_video_name">
+<code class="descclassname">scenedetect.video_manager.</code><code class="descname">get_video_name</code><span class="sig-paren">(</span><em>video_file</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.get_video_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Video Name: Returns a string representing the video file/device name.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><dl class="docutils">
+<dt>Video file name or device ID. In the case of a video, only the file</dt>
+<dd>name is returned, not the whole path. For a device, the string format
+is ‘Device 123’, where 123 is the integer ID of the capture device.</dd>
+</dl>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">str</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.video_manager.open_captures">
+<code class="descclassname">scenedetect.video_manager.</code><code class="descname">open_captures</code><span class="sig-paren">(</span><em>video_files</em>, <em>framerate=None</em>, <em>validate_parameters=True</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.open_captures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Open Captures - helper function to open all capture objects, set the framerate,
+and ensure that all open captures have been opened and the framerates match on a list
+of video file paths, or a list containing a single device ID.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>video_files</strong> (<em>list of str</em><em>(</em><em>s</em><em>)</em><em>/int</em>) – A list of one or more paths (str), or a list
+of a single integer device ID, to open as an OpenCV VideoCapture object.
+A ValueError will be raised if the list does not conform to the above.</li>
+<li><strong>framerate</strong> (<em>float</em><em>, </em><em>optional</em>) – Framerate to assume when opening the video_files.
+If not set, the first open video is used for deducing the framerate of
+all videos in the sequence.</li>
+<li><strong>validate_parameters</strong> (<em>bool</em><em>, </em><em>optional</em>) – If true, will ensure that the frame sizes
+(width, height) and frame rate (FPS) of all passed videos is the same.
+A VideoParameterMismatch is raised if the framerates do not match.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">A tuple of form (cap_list, framerate, framesize) where cap_list is a list of open
+OpenCV VideoCapture objects in the same order as the video_files list, framerate
+is a float of the video(s) framerate(s), and framesize is a tuple of (width, height)
+where width and height are integers representing the frame size in pixels.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – No video file(s) specified, or invalid/multiple device IDs specified.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">TypeError</span></code> – <cite>framerate</cite> must be type <cite>float</cite>.</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">IOError</span></code> – Video file(s) not found.</li>
+<li><a class="reference internal" href="#scenedetect.video_manager.VideoFramerateUnavailable" title="scenedetect.video_manager.VideoFramerateUnavailable"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoFramerateUnavailable</span></code></a> – Video framerate could not be obtained and <cite>framerate</cite>
+was not set manually.</li>
+<li><a class="reference internal" href="#scenedetect.video_manager.VideoParameterMismatch" title="scenedetect.video_manager.VideoParameterMismatch"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoParameterMismatch</span></code></a> – All videos in <cite>video_files</cite> do not have equal parameters.
+Set <cite>validate_parameters=False</cite> to skip this check.</li>
+<li><a class="reference internal" href="#scenedetect.video_manager.VideoOpenFailure" title="scenedetect.video_manager.VideoOpenFailure"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoOpenFailure</span></code></a> – Video(s) could not be opened.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.video_manager.release_captures">
+<code class="descclassname">scenedetect.video_manager.</code><code class="descname">release_captures</code><span class="sig-paren">(</span><em>cap_list</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.release_captures" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close Captures:  Calls the release() method on every capture in cap_list.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.video_manager.validate_capture_framerate">
+<code class="descclassname">scenedetect.video_manager.</code><code class="descname">validate_capture_framerate</code><span class="sig-paren">(</span><em>video_names</em>, <em>cap_framerates</em>, <em>framerate=None</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.validate_capture_framerate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate Capture Framerate: Ensures that the passed capture framerates are valid and equal.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><ul class="first last simple">
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">ValueError</span></code> – Invalid framerate (must be positive non-zero value).</li>
+<li><code class="xref py py-exc docutils literal notranslate"><span class="pre">TypeError</span></code> – Framerate must be of type float.</li>
+<li><a class="reference internal" href="#scenedetect.video_manager.VideoFramerateUnavailable" title="scenedetect.video_manager.VideoFramerateUnavailable"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoFramerateUnavailable</span></code></a> – Framerate for video could not be obtained,
+and <cite>framerate</cite> was not set.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="scenedetect.video_manager.validate_capture_parameters">
+<code class="descclassname">scenedetect.video_manager.</code><code class="descname">validate_capture_parameters</code><span class="sig-paren">(</span><em>video_names</em>, <em>cap_frame_sizes</em>, <em>check_framerate=False</em>, <em>cap_framerates=None</em><span class="sig-paren">)</span><a class="headerlink" href="#scenedetect.video_manager.validate_capture_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate Capture Parameters: Ensures that all passed capture frame sizes and (optionally)
+framerates are equal.  Raises VideoParameterMismatch if there is a mismatch.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference internal" href="#scenedetect.video_manager.VideoParameterMismatch" title="scenedetect.video_manager.VideoParameterMismatch"><code class="xref py py-exc docutils literal notranslate"><span class="pre">VideoParameterMismatch</span></code></a></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">PySceneDetect</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="frame_timecode.html">FrameTimecode</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">VideoManager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scene_manager.html">SceneManager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="stats_manager.html">StatsManager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scene_detector.html">SceneDetector</a></li>
+<li class="toctree-l1"><a class="reference internal" href="detectors.html">Detection Algorithms</a></li>
+<li class="toctree-l1"><a class="reference internal" href="video_splitter.html">Video Splitting</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="frame_timecode.html" title="previous chapter">FrameTimecode</a></li>
+      <li>Next: <a href="scene_manager.html" title="next chapter">SceneManager</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Brandon Castellano.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
+      
+      |
+      <a href="../_sources/scenedetect/video_manager.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
